@@ -83,6 +83,7 @@
                     <select class="form-control" id="estado" name="estado">
                         <option>libre</option>
                         <option>ocupado</option>
+                        <option>baja</option>
                     </select>
                     <input type="hidden" id="numCont" name="numCont" value=<?php echo $num ?> >
                     <input type="hidden" id="emp" name="emp" value=<?php echo $emp ?> >
