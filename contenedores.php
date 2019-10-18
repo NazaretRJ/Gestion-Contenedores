@@ -68,7 +68,7 @@ class panel_Contenedores{
             $this->pagi = 0;
         $this->contar_pagi = (strlen($this->pagi)); 
         // Contamos los registros totales
-        $result0 = mysqli_query($conexion,"SELECT * FROM albaran"); 
+        $result0 = mysqli_query($conexion,"SELECT numCont FROM contenedor"); 
         $numero_registros0 = $result0->num_rows; 
         // ----------------------------- Pagina anterior
         $prim_reg_ant = abs($this->numer_reg - $this->pagi);
@@ -79,13 +79,13 @@ class panel_Contenedores{
         $separador = "";
 
         if ($this->pagi <> 0){ 
-            $pag_anterior = "<a href='index.php?pagi=$prim_reg_ant'>Pagina anterior</a>";
+            $pag_anterior = "<a href='contenedores.php?pagi=$prim_reg_ant'>Pagina anterior</a>";
         }
         // ----------------------------- Pagina siguiente
         $prim_reg_sig = $this->numer_reg + $this->pagi;
 
         if ($this->pagi < ($numero_registros0 - ($this->numer_reg - 1))){ 
-            $pag_siguiente = "<a href='index.php?pagi=$prim_reg_sig'>Pagina siguiente</a>";
+            $pag_siguiente = "<a href='contenedores.php?pagi=$prim_reg_sig'>Pagina siguiente</a>";
         }
         // ----------------------------- Separador
         if ($this->pagi <> 0 and $this->pagi < $numero_registros0 - ($this->numer_reg - 1)) { 
@@ -207,7 +207,10 @@ class panel_Contenedores{
                 </div></td></tr>";
         }
         echo "</tbody>";
-        echo "</table>";      
+        echo "</table>";
+        echo "<p align='center'>";
+        echo $this->pagi_navegacion;
+        echo "</p>";        
     }
     
     function DeshacerUpSolicita($conexion,$ID,$emp,$empAnt){
