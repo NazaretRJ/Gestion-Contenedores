@@ -103,9 +103,7 @@
                                     echo "<a href= 'modules/muestra_Obra_especifica.php?empresa=".$nomEmp."&localizacion=".$a_res['localizacion']." '> <i style='width:5px;'class='fas fa-eye'></i></a>";
                                 }
                         }
-                        //PARA MODIFICAR
-                        //echo "<a href= 'modules/muestra_obra_especifica.php?empresa='".$nomEmp."'&localizacion='".$a_res['localizacion']."' '> <i style='width:5px;'class='fas fa-pencil-alt'></i></a>";
-                        
+
                         echo"</li>";
                     }
                     echo "</ul>";
@@ -122,10 +120,10 @@
             
         }
 
-        function addCliente($conexion,$nomEmp){
+        function addCliente($conexion,$nomEmp,$tlf){
             if($nomEmp != null){
                 
-                $res = mysqli_query($conexion,"INSERT INTO cliente (nomEmp) VALUES ('$nomEmp') ");
+                $res = mysqli_query($conexion,"INSERT INTO cliente (nomEmp,telefono) VALUES ('$nomEmp','$tlf') ");
                 echo "<hr>";
                 if($res) {
                     echo "<div class='alert alert-success'>
@@ -267,8 +265,28 @@
                 }
        
             }
-            
 
+        }
+
+        function modTelefono($conexion,$clnt,$tlf){
+            if($clnt != null && $tlf != null){
+                $res = mysqli_query($conexion,"SELECT * FROM cliente WHERE nomEmp = '".$clnt."' ");
+                
+                if($res!==false && $res->num_rows > 0){
+                    //modifiamos las obras ascociadas
+                    $res2 = mysqli_query($conexion,"UPDATE cliente SET telefono = '".$tlf."' WHERE nomEmp = '".$clnt."' ");
+                    if($res2 !== false){
+                        echo "<div class='alert alert-success'>
+                            <strong> Se ha cambiado correctamente. </strong>
+                        </div>";
+                    }
+                    else{
+                        echo "<div class='alert alert-danger'>
+                            <strong> No se ha podido cambiar.</strong>
+                        </div>";
+                    }
+                }
+            }
         }
     
     }

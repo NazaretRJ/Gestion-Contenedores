@@ -199,8 +199,6 @@ class panel_Contenedores{
                     echo "</tr>";
                 }
 
-
-
             }
         }
         else{
@@ -211,7 +209,6 @@ class panel_Contenedores{
         echo "</tbody>";
         echo "</table>";      
     }
-    
     
     function DeshacerUpSolicita($conexion,$ID,$emp,$empAnt){
         //prerrequistio: ninguno es nulo
@@ -471,6 +468,38 @@ class panel_Contenedores{
         }
         return $empresa;
     }
+
+    function ContarContenedores($conexion){
+        $res_libre = mysqli_query($conexion,"SELECT COUNT(numCont) as Clibres  FROM contenedor WHERE estado = 'libre' ");
+        $res_ocupado = mysqli_query($conexion,"SELECT COUNT(numCont) as Cocupados  FROM contenedor WHERE estado = 'ocupado' ");
+
+        if($res_libre !== false && $res_ocupado !== false){
+            echo "<table class='table table-sm table-hover' style='text-align: center;'>";
+
+            echo "<thead class='p-3 mb-2 bg-primary text-white'>";
+                echo "<tr>";
+                echo "<th scope='col'>Contenedores Libres</th>";
+                echo "<th scope='col'>Contenedores Ocupados</th>";
+                echo "</tr>";
+            echo "</thead>";
+
+            echo "<tbody style='text-align: center;'>";
+                $a_res_lib =  mysqli_fetch_assoc($res_libre);
+                $a_res_ocup =  mysqli_fetch_assoc($res_ocupado);
+                
+                echo "<tr>";
+                    echo "<td>";
+                        echo $a_res_lib['Clibres'];
+                    echo "</td>";
+
+                    echo "<td>";
+                        echo $a_res_ocup['Cocupados'];
+                    echo "</td>";
+
+                echo "</tr>";
+
+        }
+    }
 }
 
 $p_cont = new panel_Contenedores($conexion);
@@ -504,6 +533,7 @@ if(isset($_POST['BCont'])){
     $p_cont->buscarCont($conexion,$_POST['Bnum'],$_POST['Bemp']);
 }
 else{
+    $p_cont->ContarContenedores($conexion);
     $p_cont->MostrarContenedores($conexion);
 }
 

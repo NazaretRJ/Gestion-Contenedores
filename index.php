@@ -150,6 +150,7 @@ class panel_Mov {
         Función: Dada una recogida, enlaza su entrega.
         Si no encontramos el enlace, con un enumerado -> cambiamos el estado
     */
+    
     function Enlazar($conexion,$NumAlbaran,$local,$Emp,$IdCont,$cont,$empCont,$tipoContSN,$fecha2,$resi,$tipo){
         $conseguido = false;
         
@@ -598,127 +599,139 @@ class panel_Mov {
 
                 if($comp2->num_rows > 0 && $comp->num_rows > 0 ){
                     //se encontró
-                    
+                    //vemos si el estado del contenedor es válido
+
                     while($a_comp =  mysqli_fetch_assoc($comp)){
+                        
                         $varEmp = $a_comp['Empresa'];
                         $lib = 'libre';
                         $ocup = 'ocupado';
                         $ent = 'Entrega';
                         
+                        $BBaja = strcasecmp('baja',$a_comp['estado']);
 
-                        $res = false;
-                        if( $tipoContSN != 0 ){
-                            $Blibre = strcasecmp($lib,$a_comp['estado']);
-                            $Bocup = strcasecmp($ocup,$a_comp['estado']);
-                            if (( $Blibre == 0 && (strcasecmp($tipo,$ent) == 0) ) || (( $Bocup == 0) && (strcasecmp($tipo,$ent) != 0  ) )) {
-                                //si entrega y libre o recogida y ocupado
-                                
-                                $res = mysqli_query($conexion,"INSERT INTO albaran (NumAlbaran,nomEmp,localizacion,fecha,tipo) VALUES ('$NAlb','$Emp','$local','$fecha','$tipo')");
-                            }
-                            else{
-                                //el contenedor está ocupado y vas a entregarlo o el contenedor vacio y vas a recogerlo
-                                    echo "<div class='alert alert-danger'>
-                                        <strong>Estado del contenedor incoherente.</strong>
-                                    </div>";
-                            }
+                        if($tipoContSN !=0 && $BBaja == 0){
+                            //es de los numerados que tienen estado
+                            //está de baja damos error
+                            echo "<div class='alert alert-warning'>
+                                <strong> El contenedor está de baja</strong>
+                            </div>";
                         }
                         else{
-                            $res = mysqli_query($conexion,"INSERT INTO albaran (NumAlbaran,nomEmp,localizacion,fecha,tipo) VALUES ('$NAlb','$Emp','$local','$fecha','$tipo')");
-                        }
-                        
-                        if($res !== false){
-                            $id = $a_comp['Id'];
-                            //$conseguido = false;
-                            $res2 = false;
-                            if($tipoContSN == 0){
-                                //es Sin Número
-                                
-                                $res2 = mysqli_query($conexion,"INSERT INTO solicita (NumAlbaran,IdCont,EmpresaCont,tipoCont) VALUES ('$NAlb','$id','$varEmp','SN')");
-                               
-                            }
-                            else{ 
-                                $res2 = mysqli_query($conexion,"INSERT INTO solicita (NumAlbaran,IdCont,EmpresaCont,tipoCont) VALUES ('$NAlb','$id','$varEmp','Enumerado')");
-                            }
-                            if($res2 !== false){
-                                $conseguido2 = false;
-                                if($tipoContSN == 0){
-                                    $id = $a_comp['Id'];
+                            $res = false;
+                            if( $tipoContSN != 0 ){
+                                $Blibre = strcasecmp($lib,$a_comp['estado']);
+                                $Bocup = strcasecmp($ocup,$a_comp['estado']);
+                                if (( $Blibre == 0 && (strcasecmp($tipo,$ent) == 0) ) || (( $Bocup == 0) && (strcasecmp($tipo,$ent) != 0  ) )) {
+                                    //si entrega y libre o recogida y ocupado
                                     
-                                    $conseguido2 = $this->Enlazar($conexion,$NAlb,$local,$Emp,$id,$cont,$varEmp,$tipoContSN,$fecha,$resi,$tipo);
-
+                                    $res = mysqli_query($conexion,"INSERT INTO albaran (NumAlbaran,nomEmp,localizacion,fecha,tipo) VALUES ('$NAlb','$Emp','$local','$fecha','$tipo')");
                                 }
                                 else{
-                                    if(strcasecmp($tipo,'Recogida') == 0){
-                                        //tipo recogida, buscamos su entrega y actualizamos
+                                    //el contenedor está ocupado y vas a entregarlo o el contenedor vacio y vas a recogerlo
+                                        echo "<div class='alert alert-danger'>
+                                            <strong>Estado del contenedor incoherente.</strong>
+                                        </div>";
+                                }
+                            }
+                            else{
+                                $res = mysqli_query($conexion,"INSERT INTO albaran (NumAlbaran,nomEmp,localizacion,fecha,tipo) VALUES ('$NAlb','$Emp','$local','$fecha','$tipo')");
+                            }
+                            
+                            if($res !== false){
+                                $id = $a_comp['Id'];
+                                //$conseguido = false;
+                                $res2 = false;
+                                if($tipoContSN == 0){
+                                    //es Sin Número
+                                    
+                                    $res2 = mysqli_query($conexion,"INSERT INTO solicita (NumAlbaran,IdCont,EmpresaCont,tipoCont) VALUES ('$NAlb','$id','$varEmp','SN')");
+                                   
+                                }
+                                else{ 
+                                    $res2 = mysqli_query($conexion,"INSERT INTO solicita (NumAlbaran,IdCont,EmpresaCont,tipoCont) VALUES ('$NAlb','$id','$varEmp','Enumerado')");
+                                }
+                                if($res2 !== false){
+                                    $conseguido2 = false;
+                                    if($tipoContSN == 0){
                                         $id = $a_comp['Id'];
                                         
                                         $conseguido2 = $this->Enlazar($conexion,$NAlb,$local,$Emp,$id,$cont,$varEmp,$tipoContSN,$fecha,$resi,$tipo);
-                                        
+    
                                     }
-                                }
-                                
-                                if( ($conseguido2 == false && $tipoContSN == 0) || ($tipoContSN !=0 && (strcasecmp($tipo,'Recogida') == 0) && $conseguido2 == false) ){
-                                    //TODO Ver en que casos hay que borrar
-                                    echo "<div class='alert alert-warning'>
-                                    <strong> No se pudo vincular </strong>
-                                    </div>";
-                                }
-                                
-                                $conseguido = false;
-                                if($tipoContSN == 0){
-                                    //es Sin Número
-                                    $conseguido = $this->ChangeSolicitaSN($conexion,$NAlb,$id,$varEmp,$cont,$tipo);
-                                }
-                                else{ 
+                                    else{
+                                        if(strcasecmp($tipo,'Recogida') == 0){
+                                            //tipo recogida, buscamos su entrega y actualizamos
+                                            $id = $a_comp['Id'];
+                                            
+                                            $conseguido2 = $this->Enlazar($conexion,$NAlb,$local,$Emp,$id,$cont,$varEmp,$tipoContSN,$fecha,$resi,$tipo);
+                                            
+                                        }
+                                    }
                                     
-                                    $conseguido =  $this->ChangeSolicitaConNum($conexion,$NAlb,$id,$varEmp,$cont,$tipo);
-                                }
-
-                                if($conseguido == false){
-                                    //borramos todo
-                                    $borrar = mysqli_query($conexion,"DELETE FROM enlace WHERE '".$NAlb."' = NumEntrega OR '".$NAlb."' = NumRecogida ");
-                                    $borrar2 = mysqli_query($conexion,"DELETE FROM albaran WHERE '".$NAlb."' = NumAlbaran ");
-                                    
-                                    if($borrar == false || $borrar2 == false ){
+                                    if( ($conseguido2 == false && $tipoContSN == 0) || ($tipoContSN !=0 && (strcasecmp($tipo,'Recogida') == 0) && $conseguido2 == false) ){
+                                        //TODO Ver en que casos hay que borrar
                                         echo "<div class='alert alert-warning'>
-                                        <strong> Incongruencias en la base de datos </strong>
+                                        <strong> No se pudo vincular </strong>
                                         </div>";
                                     }
+                                    
+                                    $conseguido = false;
+                                    if($tipoContSN == 0){
+                                        //es Sin Número
+                                        $conseguido = $this->ChangeSolicitaSN($conexion,$NAlb,$id,$varEmp,$cont,$tipo);
+                                    }
+                                    else{ 
+                                        
+                                        $conseguido =  $this->ChangeSolicitaConNum($conexion,$NAlb,$id,$varEmp,$cont,$tipo);
+                                    }
+    
+                                    if($conseguido == false){
+                                        //borramos todo
+                                        $borrar = mysqli_query($conexion,"DELETE FROM enlace WHERE '".$NAlb."' = NumEntrega OR '".$NAlb."' = NumRecogida ");
+                                        $borrar2 = mysqli_query($conexion,"DELETE FROM albaran WHERE '".$NAlb."' = NumAlbaran ");
+                                        
+                                        if($borrar == false || $borrar2 == false ){
+                                            echo "<div class='alert alert-warning'>
+                                            <strong> Incongruencias en la base de datos </strong>
+                                            </div>";
+                                        }
+                                    }
+                                    else{
+                                        echo "<div class='alert alert-success'>
+                                        <strong> Añadido correctamente </strong>
+                                        </div>";
+                                    }
+    
                                 }
                                 else{
-                                    echo "<div class='alert alert-success'>
-                                    <strong> Añadido correctamente </strong>
-                                    </div>";
+                                    //borrar albaran
+                                    $res3 = mysqli_query($conexion,"DELETE FROM albaran WHERE '".$NAlb."' = NumAlbaran ");
+    
+                                    if($res3 === false){
+                                        echo "<div class='alert alert-warning'>
+                                        <strong> Estado de la base de datos incoherente</strong>
+                                        </div>";
+                                    }
+                                    else{
+                                        echo "<div class='alert alert-warning'>
+                                        <strong> No se pudo realizar esta operación</strong>
+                                        </div>";
+                                    }
+    
                                 }
-
                             }
                             else{
-                                //borrar albaran
-                                $res3 = mysqli_query($conexion,"DELETE FROM albaran WHERE '".$NAlb."' = NumAlbaran ");
-
-                                if($res3 === false){
-                                    echo "<div class='alert alert-warning'>
-                                    <strong> Estado de la base de datos incoherente</strong>
-                                    </div>";
-                                }
-                                else{
-                                    echo "<div class='alert alert-warning'>
-                                    <strong> No se pudo realizar esta operación</strong>
-                                    </div>";
-                                }
-
+                                echo "<div class='alert alert-warning'>
+                                <strong> No se pudo realizar esta operación</strong>
+                                </div>";
                             }
-                        }
-                        else{
-                            echo "<div class='alert alert-warning'>
-                            <strong> No se pudo realizar esta operación</strong>
-                            </div>";
                         }
                     }
                 }
                 else{
                     echo "<div class='alert alert-warning'>
-                    <strong> No se ha encontrado el contenedor</strong>
+                    <strong> No se ha encontrado el contenedor o la obra</strong>
                     </div>";
                 }   
             }
