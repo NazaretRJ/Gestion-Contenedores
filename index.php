@@ -208,7 +208,8 @@ class panel_Mov {
             and solicita.IdCont = contenedor.Id and solicita.EmpresaCont = '".$empCont."' 
             and solicita.EmpresaCont = contenedor.Empresa and contenedor.numCont = '".$cont."'
             and albaran.tipo = '".$ent."' and solicita.NumAlbaran = albaran.NumAlbaran
-            and albaran.nomEmp = '".$Emp."' and albaran.localizacion = '".$local."'  ");
+            and albaran.nomEmp = '".$Emp."' and albaran.localizacion = '".$local."' 
+            and albaran.NumAlbaran NOT IN (SELECT NEntrega FROM enlace) ");
         }
 
         if($res !== false){
